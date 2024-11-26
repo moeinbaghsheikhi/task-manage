@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, HttpStatus, Query, Put } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Response } from 'express';
+import TaskStatusEnum from './enums/taskStatusEnum';
 
 @Controller('tasks')
 export class TasksController {
@@ -20,22 +21,52 @@ export class TasksController {
   }
 
   @Get()
-  findAll() {
-    return this.tasksService.findAll();
+  async findAll(
+    @Res() res: Response,
+    @Query('status') status?: TaskStatusEnum,
+    @Query('project') projectId?: number,
+    @Query('limit')  limit  : number = 10,
+    @Query('page')   page   : number = 1
+  ) {
+    const tasks = await this.tasksService.findAll(status, projectId, limit, page);
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: tasks,
+      message: "لیست تسک ها با موفقیت دریافت شد"
+    })
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(+id);
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    const task = await this.tasksService.findOne(+id);
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: task,
+      message: "تسک با موفقیت دریافت شد"
+    })
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    return this.tasksService.update(+id, updateTaskDto);
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() createTaskDto: CreateTaskDto, @Res() res: Response) {
+    await this.tasksService.update(+id, createTaskDto);
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: null,
+      message: "تسک شما با موفقیت آپدیت شد"
+    })
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tasksService.remove(+id);
+  async remove(@Param('id') id: string, @Res() res: Response) {
+    await this.tasksService.remove(+id);
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: null,
+      message: "تسک شما با موفقیت حذف شد"
+    })
   }
 }
