@@ -58,7 +58,6 @@ export class ProjectsService {
     } catch{
       throw new BadRequestException("هنگام آپدیت پروژه خطایی رخ داد!")
     }
-
   }
 
   async remove(id: number): Promise<void> {
